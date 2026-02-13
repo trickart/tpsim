@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build for macOS
+        run: swift build -c release --arch arm64 --arch x86_64
+
+      - name: Install Swift
+        run: |
+          curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg && \
+          installer -pkg swiftly.pkg -target CurrentUserHomeDirectory && \
+          ~/.swiftly/bin/swiftly init --quiet-shell-followup && \
+          . "${SWIFTLY_HOME_DIR:-$HOME/.swiftly}/env.sh" && \
+          hash -r
+          swiftly install 6.2.3
+          swift sdk install https://download.swift.org/swift-6.2.3-release/static-sdk/swift-6.2.3-RELEASE/swift-6.2.3-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum f30ec724d824ef43b5546e02ca06a8682dafab4b26a99fbb0e858c347e507a2c
+
+      - name: Build for Linux
+        run: |
+          . "${SWIFTLY_HOME_DIR:-$HOME/.swiftly}/env.sh"
+          swift build -c release --swift-sdk x86_64-swift-linux-musl
+
+      - name: Create artifactbundle
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+
+          mkdir -p tpsim.artifactbundle/tpsim-macos/bin
+          mkdir -p tpsim.artifactbundle/tpsim-linux/bin
+
+          cp .build/apple/Products/Release/tpsim tpsim.artifactbundle/tpsim-macos/bin/tpsim
+          cp .build/release/tpsim tpsim.artifactbundle/tpsim-linux/bin/tpsim
+
+          cat > tpsim.artifactbundle/info.json << EOF
+          {
+            "schemaVersion": "1.0",
+            "artifacts": {
+              "tpsim": {
+                "version": "${VERSION}",
+                "type": "executable",
+                "variants": [
+                  {
+                    "path": "tpsim-macos/bin/tpsim",
+                    "supportedTriples": ["arm64-apple-macosx", "x86_64-apple-macosx"]
+                  },
+                  {
+                    "path": "tpsim-linux/bin/tpsim",
+                    "supportedTriples": ["x86_64-unknown-linux-gnu"]
+                  }
+                ]
+              }
+            }
+          }
+          EOF
+
+      - name: Create zip and calculate checksum
+        id: archive
+        run: |
+          zip -r tpsim.artifactbundle.zip tpsim.artifactbundle
+          CHECKSUM=$(swift package compute-checksum ./tpsim.artifactbundle.zip)
+          echo $CHECKSUM
+          echo "CHECKSUM=${CHECKSUM}" >> $GITHUB_ENV
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          TAG="${{ github.ref_name }}"
+
+          cat > release-notes.md << EOF
+          # artifactbundle
+
+          checksum: ${{ env.CHECKSUM }}
+          EOF
+
+          gh release create "${TAG}" \
+            tpsim.artifactbundle.zip \
+            --generate-notes \
+            --notes-file release-notes.md
