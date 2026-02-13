@@ -13,9 +13,17 @@ if CommandLine.arguments.contains("--license") {
     exit(0)
 }
 
+var port = 9100
+let arguments = CommandLine.arguments
+if arguments.count >= 2,
+   let parsed = Int(arguments[1]),
+   (1...65535).contains(parsed) {
+    port = parsed
+}
+
 let sixelSupported = detectSixelSupport()
 
-let server = TCPServer(port: 9100)
+let server = TCPServer(port: port)
 
 do {
     let (boundPort, connections) = try await server.start()
@@ -26,7 +34,7 @@ do {
     } else {
         print("Sixel graphics: disabled (terminal does not support Sixel)")
     }
-    print("Send ESC/POS data via TCP (e.g., nc localhost 9100)")
+    print("Send ESC/POS data via TCP (e.g., nc localhost \(boundPort)")
     print("Press Ctrl+C to stop.\n")
 
     for try await connection in connections {
