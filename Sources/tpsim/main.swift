@@ -41,7 +41,7 @@ do {
 
 func handleConnection(_ connection: TCPConnection) async {
     let remoteAddress = connection.remoteAddress
-    print("--- Connection from \(remoteAddress) ---")
+    print("Connection from \(remoteAddress)")
 
     do {
         try await connection.withConnection { receive, send in
@@ -71,5 +71,5 @@ func handleConnection(_ connection: TCPConnection) async {
         // 接続が閉じられた場合のエラーは正常終了として扱う
     }
 
-    print("--- Connection from \(remoteAddress) closed ---\n")
+    print("Connection from \(remoteAddress) closed")
 }
