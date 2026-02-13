@@ -2,6 +2,9 @@ import Foundation
 import ThermalPrinterCommand
 import ReceiptRenderer
 import Communication
+#if canImport(CNIOLinux)
+@preconcurrency import CNIOLinux
+#endif
 
 setbuf(stdout, nil)
 
