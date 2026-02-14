@@ -12,14 +12,16 @@ TCP ポート 9100 で接続を待ち受け、受信した ESC/POS コマンド�
 - Swift NIO による非同期 TCP サーバー
 - macOS / Linux 対応
 
-## 必要環境
+## Install
 
-- Swift 6.2 以上
+```bash
+brew install trickart/tap/tpsim
+```
 
 ## 実行
 
 ```bash
-swift run
+tpsim 9100 # ポートは省略可能
 ```
 
 ポート 9100 で TCP サーバーが起動します。別のターミナルから ESC/POS コマンドを送信してテストできます。
@@ -27,6 +29,10 @@ swift run
 ```bash
 echo -e "\x1B\x40" | nc localhost 9100
 ```
+
+## 開発必要環境
+
+- Swift 6.2 以上
 
 ## ライセンス
 
