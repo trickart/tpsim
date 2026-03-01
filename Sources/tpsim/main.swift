@@ -1,6 +1,6 @@
 import Foundation
 import ThermalPrinterCommand
-import PrinterSimulator
+import ReceiptRenderer
 import Communication
 #if canImport(CNIOLinux)
 @preconcurrency import CNIOLinux
@@ -54,21 +54,24 @@ func handleConnection(_ connection: TCPConnection) async {
     do {
         try await connection.withConnection { receive, send in
             var decoder = ESCPOSDecoder()
-            var renderer = TextReceiptRenderer(
-                ansiStyleEnabled: (isatty(STDOUT_FILENO) != 0),
-                sixelEnabled: sixelSupported
-            )
+            var renderer = TextReceiptRenderer(ansiStyleEnabled: (isatty(STDOUT_FILENO) != 0), sixelEnabled: sixelSupported)
             let cellSize = detectCellSize()
             if let cellSize {
                 renderer.cellPixelWidth = cellSize.cellPixelWidth
                 renderer.displayScale = cellSize.displayScale
             }
-            var simulator = ESCPOSPrinterSimulator(renderer: renderer)
 
             for try await data in receive {
                 let commands = decoder.decode(data)
-                for response in simulator.process(commands) {
-                    try await send(response)
+                renderer.render(commands)
+
+                for command in commands {
+                    if case .requestProcessIdResponse(let d1, let d2, let d3, let d4) = command {
+                        // プロセスIDレスポンス送信: Header(37H 25H) + fn(30H) + status(00H) + d1-d4 + NUL(00H)
+                        let response = Data([0x37, 0x25, 0x30, 0x00, d1, d2, d3, d4, 0x00])
+                        try await send(response)
+                        print("process: \(d1), \(d2), \(d3), \(d4)")
+                    }
                 }
             }
         }
