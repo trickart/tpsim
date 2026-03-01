@@ -1,5 +1,5 @@
 {
-  "originHash" : "864722c8b5d7195c3137aab1925ebb2f43187870b13a67d1f32d5f1739cb5d6b",
+  "originHash" : "b1b33afc45f5731b9e97002d3b29bd80e43d7bb723189efbebfa084d44978915",
   "pins" : [
     {
       "identity" : "swift-atomics",
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/trickart/ThermalPrinterCommand.git",
       "state" : {
-        "revision" : "b7b59ccd78f8641445f37651c2ba7cc153772252",
-        "version" : "0.0.3"
+        "revision" : "2241b4c1c9fcf6983dba0d4fd4ae0fa35b0fafc7",
+        "version" : "0.0.4"
       }
     }
   ],
