@@ -89,3 +89,39 @@ jobs:
             tpsim.artifactbundle.zip \
             --generate-notes \
             --notes-file release-notes.md
+
+      - name: Update Homebrew Formula
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          CHECKSUM="${{ env.CHECKSUM }}"
+          URL="https://github.com/trickart/tpsim/releases/download/${VERSION}/tpsim.artifactbundle.zip"
+
+          gh repo clone trickart/homebrew-tap /tmp/homebrew-tap
+
+          cat > /tmp/homebrew-tap/Formula/tpsim.rb << FORMULA
+class Tpsim < Formula
+  desc "ESC/POS thermal printer simulator"
+  homepage "https://github.com/trickart/tpsim"
+  url "${URL}"
+  sha256 "${CHECKSUM}"
+  license "MIT"
+
+  def install
+    bin.install "tpsim-macos/bin/tpsim" if OS.mac?
+    bin.install "tpsim-linux/bin/tpsim" if OS.linux?
+  end
+
+  test do
+    assert_match "MIT License", shell_output("#{bin}/tpsim --license")
+  end
+end
+FORMULA
+
+          cd /tmp/homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/tpsim.rb
+          git commit -m "tpsim ${VERSION} に更新"
+          git push
