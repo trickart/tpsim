@@ -9,7 +9,7 @@ let package = Package(
         .iOS(.v13),
     ],
     dependencies: [
-        .package(url: "https://github.com/trickart/ThermalPrinterCommand.git", from: "0.0.3"),
+        .package(url: "https://github.com/trickart/ThermalPrinterCommand.git", from: "0.0.4"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
     ],
     targets: [
