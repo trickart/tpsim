@@ -9,7 +9,7 @@ let package = Package(
         .iOS(.v13),
     ],
     dependencies: [
-        .package(url: "https://github.com/trickart/ThermalPrinterCommand.git", from: "0.0.2"),
+        .package(path: "../ThermalPrinterCommand"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
     ],
     targets: [
@@ -24,7 +24,7 @@ let package = Package(
             name: "tpsim",
             dependencies: [
                 .product(name: "ThermalPrinterCommand", package: "ThermalPrinterCommand"),
-                .product(name: "ReceiptRenderer", package: "ThermalPrinterCommand"),
+                .product(name: "PrinterSimulator", package: "ThermalPrinterCommand"),
                 "Communication",
             ]
         ),
