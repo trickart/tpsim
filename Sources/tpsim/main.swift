@@ -23,7 +23,7 @@ if arguments.count >= 2,
 
 let sixelSupported = detectSixelSupport()
 
-let server = TCPServer(port: port)
+let server = TCPServer(hosts: ["0.0.0.0", "::"], port: port)
 
 do {
     let (boundPort, connections) = try await server.start()
